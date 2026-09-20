@@ -1,0 +1,6 @@
+{
+  "name": "Kepinn Joki Blox Fruits",
+  "description": "Landing page profesional, konversif, dan aman untuk jasa joki Blox Fruits dengan kalkulator harga instan, protokol keamanan akun, dan verifikasi admin resmi.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
