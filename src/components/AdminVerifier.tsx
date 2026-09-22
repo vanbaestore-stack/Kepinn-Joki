@@ -1,10 +1,12 @@
 import React, { useState } from 'react';
-import { ShieldCheck, AlertOctagon, CheckCircle2, Search, ExternalLink, Instagram, Phone } from 'lucide-react';
+import { AlertOctagon, CheckCircle2, Phone, ExternalLink } from 'lucide-react';
 import { ADMIN_PHONE, DISPLAY_PHONE, WA_CHANNEL_URL, INSTAGRAM_HANDLE, TIKTOK_HANDLE } from '../data';
+import { useLanguage } from '../context/LanguageContext';
 
 export const AdminVerifier: React.FC = () => {
   const [inputNumber, setInputNumber] = useState<string>('');
   const [result, setResult] = useState<'idle' | 'valid' | 'invalid'>('idle');
+  const { language, t } = useLanguage();
 
   const handleVerify = (e: React.FormEvent) => {
     e.preventDefault();
@@ -32,15 +34,14 @@ export const AdminVerifier: React.FC = () => {
         <div className="bg-zinc-950 rounded-2xl border border-zinc-800 p-6 sm:p-8 shadow-xl">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 border-b border-zinc-800">
             <div>
-              <span className="inline-flex items-center gap-1.5 text-xs font-bold text-emerald-400 bg-emerald-950/60 px-2.5 py-0.5 rounded-full border border-emerald-800/40 uppercase tracking-wider mb-2">
-                <ShieldCheck className="w-3.5 h-3.5" />
-                Anti-Impersonation Tool
-              </span>
+              <p className="text-xs font-bold text-emerald-400 uppercase tracking-wider mb-2">
+                {t.verifier.eyebrow}
+              </p>
               <h3 className="text-xl sm:text-2xl font-bold text-white">
-                Verifikasi Nomor Admin Resmi
+                {t.verifier.heading}
               </h3>
               <p className="text-xs sm:text-sm text-zinc-400 mt-1">
-                Banyak akun peniru di TikTok/Instagram yang mengatasnamakan Kepinn Joki. Masukkan nomor kontak untuk memastikan Anda bertransaksi dengan admin sah.
+                {t.verifier.subheading}
               </p>
             </div>
           </div>
@@ -52,7 +53,7 @@ export const AdminVerifier: React.FC = () => {
                 <Phone className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500" />
                 <input
                   type="text"
-                  placeholder="Contoh: 082112834450 atau +62 821..."
+                  placeholder={t.verifier.placeholder}
                   value={inputNumber}
                   onChange={(e) => {
                     setInputNumber(e.target.value);
@@ -65,7 +66,7 @@ export const AdminVerifier: React.FC = () => {
                 type="submit"
                 className="bg-zinc-800 hover:bg-zinc-700 text-white font-bold px-6 py-3 rounded-xl text-sm transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500 shrink-0 min-h-[44px]"
               >
-                Cek Keaslian
+                {t.verifier.checkBtn}
               </button>
             </div>
 
@@ -74,9 +75,9 @@ export const AdminVerifier: React.FC = () => {
               <div className="p-4 rounded-xl bg-emerald-950/60 border border-emerald-700/60 text-emerald-300 text-xs sm:text-sm flex items-start gap-3">
                 <CheckCircle2 className="w-5 h-5 text-emerald-400 shrink-0 mt-0.5" />
                 <div>
-                  <p className="font-bold text-white">NOMOR RESMI KEPINN JOKI TERVERIFIKASI</p>
+                  <p className="font-bold text-white">{t.verifier.verifiedTitle}</p>
                   <p className="mt-0.5 text-zinc-300">
-                    Nomor ini adalah kontak resmi admin kami ({DISPLAY_PHONE}). Anda aman melanjutkan transaksi dan konsultasi akun.
+                    {t.verifier.verifiedDesc} ({DISPLAY_PHONE})
                   </p>
                 </div>
               </div>
@@ -86,9 +87,9 @@ export const AdminVerifier: React.FC = () => {
               <div className="p-4 rounded-xl bg-red-950/60 border border-red-700/60 text-red-300 text-xs sm:text-sm flex items-start gap-3">
                 <AlertOctagon className="w-5 h-5 text-red-400 shrink-0 mt-0.5" />
                 <div>
-                  <p className="font-bold text-white">PERINGATAN: BUKAN NOMOR RESMI KEPINN JOKI</p>
+                  <p className="font-bold text-white">{t.verifier.warningTitle}</p>
                   <p className="mt-0.5 text-zinc-300">
-                    Nomor yang Anda masukkan tidak terdaftar dalam database kami. Jangan mengirimkan uang atau data login Roblox Anda ke nomor tersebut!
+                    {t.verifier.warningDesc}
                   </p>
                 </div>
               </div>
@@ -117,15 +118,21 @@ export const AdminVerifier: React.FC = () => {
               className="p-3 rounded-xl bg-zinc-900 border border-zinc-800 hover:border-zinc-700 flex items-center justify-between text-zinc-300 hover:text-white transition-colors"
             >
               <div>
-                <span className="text-[10px] text-zinc-500 block">Saluran WhatsApp</span>
-                <span className="font-semibold text-emerald-400">Saluran Resmi</span>
+                <span className="text-[10px] text-zinc-500 block">
+                  {language === 'en' ? 'WhatsApp Channel' : 'Saluran WhatsApp'}
+                </span>
+                <span className="font-semibold text-emerald-400">
+                  {language === 'en' ? 'Official Channel' : 'Saluran Resmi'}
+                </span>
               </div>
               <ExternalLink className="w-3.5 h-3.5 text-zinc-500" />
             </a>
 
             <div className="p-3 rounded-xl bg-zinc-900 border border-zinc-800 flex items-center justify-between text-zinc-300">
               <div>
-                <span className="text-[10px] text-zinc-500 block">Sosial Media Resmi</span>
+                <span className="text-[10px] text-zinc-500 block">
+                  {language === 'en' ? 'Official Social Media' : 'Sosial Media Resmi'}
+                </span>
                 <span className="font-semibold text-zinc-300">IG: {INSTAGRAM_HANDLE} &bull; TikTok: {TIKTOK_HANDLE}</span>
               </div>
             </div>

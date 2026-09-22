@@ -1,14 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { MessageCircle, ShieldCheck, Menu, X } from 'lucide-react';
+import { MessageCircle, ShieldCheck, Menu, X, Globe } from 'lucide-react';
 import { ADMIN_PHONE, DISPLAY_PHONE } from '../data';
+import { useLanguage } from '../context/LanguageContext';
 
-interface NavbarProps {
-  onOpenAudit?: () => void;
-}
-
-export const Navbar: React.FC<NavbarProps> = () => {
+export const Navbar: React.FC = () => {
   const [scrolled, setScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const { language, setLanguage, t } = useLanguage();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -53,63 +51,102 @@ export const Navbar: React.FC<NavbarProps> = () => {
             href="#keunggulan"
             className="text-zinc-400 hover:text-white transition-colors py-2 focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500 rounded"
           >
-            Keunggulan
+            {t.nav.advantages}
           </a>
           <a
             href="#kalkulator"
             className="text-red-400 hover:text-red-300 font-semibold transition-colors py-2 flex items-center gap-1.5 focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500 rounded"
           >
             <span className="w-1.5 h-1.5 rounded-full bg-red-500"></span>
-            Kalkulator Harga
+            {t.nav.calculator}
           </a>
           <a
             href="#layanan"
             className="text-zinc-400 hover:text-white transition-colors py-2 focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500 rounded"
           >
-            Daftar Layanan
+            {t.nav.services}
           </a>
           <a
             href="#keamanan"
             className="text-zinc-400 hover:text-white transition-colors py-2 flex items-center gap-1 focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500 rounded"
           >
             <ShieldCheck className="w-4 h-4 text-emerald-400" />
-            SOP Keamanan
+            {t.nav.security}
           </a>
           <a
             href="#testimoni"
             className="text-zinc-400 hover:text-white transition-colors py-2 focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500 rounded"
           >
-            Bukti Transaksi
+            {t.nav.testimonials}
           </a>
           <a
             href="#faq"
             className="text-zinc-400 hover:text-white transition-colors py-2 focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500 rounded"
           >
-            FAQ
+            {t.nav.faq}
           </a>
         </nav>
 
-        {/* Action Buttons */}
-        <div className="flex items-center gap-3">
+        {/* Action Buttons & Language Switcher */}
+        <div className="flex items-center gap-2.5 sm:gap-3">
+          {/* Desktop Language Switcher */}
+          <div
+            id="desktop-lang-switcher"
+            className="flex items-center gap-1 bg-zinc-900 border border-zinc-800 rounded-lg p-1"
+            role="group"
+            aria-label={t.nav.switchLang}
+          >
+            <Globe className="w-3.5 h-3.5 text-zinc-400 ml-1 mr-0.5" />
+            <button
+              type="button"
+              id="lang-btn-id"
+              onClick={() => setLanguage('id')}
+              className={`px-2 py-1 text-xs font-bold rounded transition-colors ${
+                language === 'id'
+                  ? 'bg-red-600 text-white shadow-sm'
+                  : 'text-zinc-400 hover:text-zinc-200'
+              }`}
+              aria-pressed={language === 'id'}
+            >
+              ID
+            </button>
+            <button
+              type="button"
+              id="lang-btn-en"
+              onClick={() => setLanguage('en')}
+              className={`px-2 py-1 text-xs font-bold rounded transition-colors ${
+                language === 'en'
+                  ? 'bg-red-600 text-white shadow-sm'
+                  : 'text-zinc-400 hover:text-zinc-200'
+              }`}
+              aria-pressed={language === 'en'}
+            >
+              EN
+            </button>
+          </div>
+
           {/* Primary WhatsApp CTA */}
           <a
             id="nav-wa-cta"
             href={`https://wa.me/${ADMIN_PHONE}?text=${encodeURIComponent(
-              'Halo Admin Kepinn Joki, saya ingin konsultasi order joki Blox Fruits.'
+              language === 'en'
+                ? 'Hello Admin Kepinn Joki, I would like to consult about Blox Fruits boosting services.'
+                : 'Halo Admin Kepinn Joki, saya ingin konsultasi order joki Blox Fruits.'
             )}`}
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center gap-2 bg-gradient-to-r from-red-600 to-red-700 hover:from-red-500 hover:to-red-600 text-white text-xs sm:text-sm font-bold px-4 py-2.5 rounded-lg shadow-lg shadow-red-950/50 transition-all hover:scale-[1.02] focus:outline-none focus-visible:ring-2 focus-visible:ring-white min-h-[44px]"
+            className="inline-flex items-center gap-2 bg-gradient-to-r from-red-600 to-red-700 hover:from-red-500 hover:to-red-600 text-white text-xs sm:text-sm font-bold px-3.5 sm:px-4 py-2 rounded-lg shadow-lg shadow-red-950/50 transition-all hover:scale-[1.02] focus:outline-none focus-visible:ring-2 focus-visible:ring-white min-h-[40px] sm:min-h-[44px]"
           >
             <MessageCircle className="w-4 h-4 text-white fill-white" />
-            <span>Hubungi Admin</span>
+            <span className="hidden sm:inline">{t.nav.contactAdmin}</span>
+            <span className="sm:hidden">WhatsApp</span>
           </a>
 
           {/* Mobile menu trigger */}
           <button
             id="mobile-menu-trigger"
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            className="lg:hidden p-2 rounded-lg bg-zinc-900 text-zinc-300 hover:text-white border border-zinc-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500 min-h-[44px] min-w-[44px] flex items-center justify-center"
+            className="lg:hidden p-2 rounded-lg bg-zinc-900 text-zinc-300 hover:text-white border border-zinc-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500 min-h-[40px] min-w-[40px] flex items-center justify-center"
             aria-label="Buka menu navigasi"
             aria-expanded={mobileMenuOpen}
           >
@@ -124,26 +161,58 @@ export const Navbar: React.FC<NavbarProps> = () => {
           id="mobile-nav-panel"
           className="lg:hidden bg-zinc-950 border-b border-zinc-800 px-4 pt-3 pb-6 space-y-3"
         >
+          {/* Mobile Language Switcher Row */}
+          <div className="flex items-center justify-between py-2 border-b border-zinc-800/80">
+            <span className="text-xs text-zinc-400 flex items-center gap-1.5 font-medium">
+              <Globe className="w-4 h-4 text-zinc-400" />
+              {t.nav.switchLang}
+            </span>
+            <div className="flex items-center gap-1 bg-zinc-900 border border-zinc-800 rounded-lg p-1">
+              <button
+                type="button"
+                onClick={() => setLanguage('id')}
+                className={`px-3 py-1 text-xs font-bold rounded transition-colors ${
+                  language === 'id'
+                    ? 'bg-red-600 text-white'
+                    : 'text-zinc-400 hover:text-zinc-200'
+                }`}
+              >
+                Bahasa Indonesia
+              </button>
+              <button
+                type="button"
+                onClick={() => setLanguage('en')}
+                className={`px-3 py-1 text-xs font-bold rounded transition-colors ${
+                  language === 'en'
+                    ? 'bg-red-600 text-white'
+                    : 'text-zinc-400 hover:text-zinc-200'
+                }`}
+              >
+                English
+              </button>
+            </div>
+          </div>
+
           <a
             href="#keunggulan"
             onClick={() => setMobileMenuOpen(false)}
             className="block text-zinc-300 hover:text-white py-2 font-medium"
           >
-            Keunggulan Kami
+            {t.nav.advantages}
           </a>
           <a
             href="#kalkulator"
             onClick={() => setMobileMenuOpen(false)}
             className="block text-red-400 hover:text-red-300 py-2 font-semibold"
           >
-            Kalkulator Harga Instan
+            {t.nav.calculator}
           </a>
           <a
             href="#layanan"
             onClick={() => setMobileMenuOpen(false)}
             className="block text-zinc-300 hover:text-white py-2 font-medium"
           >
-            Daftar Layanan & Paket
+            {t.nav.services}
           </a>
           <a
             href="#keamanan"
@@ -151,25 +220,25 @@ export const Navbar: React.FC<NavbarProps> = () => {
             className="block text-emerald-400 hover:text-emerald-300 py-2 font-medium flex items-center gap-2"
           >
             <ShieldCheck className="w-4 h-4" />
-            SOP Keamanan Akun
+            {t.nav.security}
           </a>
           <a
             href="#testimoni"
             onClick={() => setMobileMenuOpen(false)}
             className="block text-zinc-300 hover:text-white py-2 font-medium"
           >
-            Bukti Transaksi & Testimoni
+            {t.nav.testimonials}
           </a>
           <a
             href="#faq"
             onClick={() => setMobileMenuOpen(false)}
             className="block text-zinc-300 hover:text-white py-2 font-medium"
           >
-            Tanya Jawab (FAQ)
+            {t.nav.faq}
           </a>
-          <div className="pt-2 border-t border-zinc-800">
+          <div className="pt-2 border-t border-zinc-800 flex items-center justify-between">
             <p className="text-xs text-zinc-500">
-              Admin Resmi: <span className="text-zinc-300 font-mono">{DISPLAY_PHONE}</span>
+              {t.nav.officialAdmin}: <span className="text-zinc-300 font-mono">{DISPLAY_PHONE}</span>
             </p>
           </div>
         </div>

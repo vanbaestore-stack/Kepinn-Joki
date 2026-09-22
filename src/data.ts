@@ -75,10 +75,10 @@ export const SERVICES_DATA: ServiceItem[] = [
 export const SECURITY_CHECKLIST: SecurityChecklist[] = [
   {
     step: 1,
-    title: 'Pasang PIN Akun Roblox (Wajib)',
-    desc: 'Buka Settings Roblox > Parental Controls > Aktifkan 4-digit Account PIN. PIN ini mengunci email dan password sehingga pihak lain TIDAK BISA mengganti data akun Anda.',
-    criticalTip: 'Jangan pernah membagikan PIN ini kepada siapapun, termasuk kami!',
-    icon: 'ShieldCheck',
+    title: 'Buat Kode Pemulihan / Backup Code (Wajib)',
+    desc: 'Buka Settings Roblox > Security > 2-Step Verification > Generate Backup Codes. Kode cadangan ini memastikan Anda tetap memegang kendali penuh atas pemulihan akun tanpa perlu mematikan 2FA.',
+    criticalTip: 'Simpan daftar kode cadangan Anda di tempat aman. Jangan berikan akses email utama Anda kepada siapapun!',
+    icon: 'Key',
   },
   {
     step: 2,
@@ -152,7 +152,7 @@ export const SECURITY_AUDIT_REPORT = {
       status: 'Fixed',
       title: 'Penyerahan Kredensial Polos (Plaintext Credentials Risk)',
       problem: 'Landing page lama menuliskan "serahkan data login (username & password) dengan aman" tanpa panduan teknis. Mayoritas gamer tidak paham cara mengamankan akun sehingga rawan terjadi pembajakan akun (Account Takeover), perubahan email, dan pencurian robux/item jika perangkat admin terinfeksi malware.',
-      solution: 'Dibuat SOP Keamanan 4 Langkah: Wajib aktifkan Account PIN Roblox, gunakan password sementara, verifikasi 2FA sekali pakai, dan instruksi wajib "Log Out of All Other Sessions" pasca-joki. Ditegaskan juga larangan membocorkan Cookie .ROBLOSECURITY.',
+      solution: 'Dibuat SOP Keamanan 4 Langkah: Wajib buat Kode Pemulihan (Backup Code) Roblox, gunakan password sementara, verifikasi 2FA sekali pakai, dan instruksi wajib "Log Out of All Other Sessions" pasca-joki. Ditegaskan juga larangan membocorkan Cookie .ROBLOSECURITY.',
     },
     {
       category: 'Privasi Data & PII (Personally Identifiable Information)',

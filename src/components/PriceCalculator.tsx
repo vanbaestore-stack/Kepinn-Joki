@@ -1,18 +1,124 @@
 import React, { useState, useMemo } from 'react';
-import { Calculator, MessageCircle, Copy, Check, Sparkles, AlertCircle, ArrowRight, ShieldCheck } from 'lucide-react';
+import { MessageCircle, Copy, Check, Sparkles, AlertCircle, ArrowRight, ShieldCheck, Plus, Minus, ArrowUpRight, Compass } from 'lucide-react';
 import { ADMIN_PHONE } from '../data';
+import { useLanguage } from '../context/LanguageContext';
 
 type TabType = 'level' | 'mastery' | 'belly' | 'fragment' | 'special';
 
+// Helper to determine Blox Fruits Sea info
+function getSeaInfo(level: number, isEn: boolean) {
+  if (level < 700) {
+    return {
+      name: isEn ? 'Sea 1 (First Sea)' : 'Sea 1 (Lautan Pertama)',
+      short: 'Sea 1',
+      textClass: 'text-sky-400',
+    };
+  }
+  if (level < 1500) {
+    return {
+      name: isEn ? 'Sea 2 (Second Sea)' : 'Sea 2 (Lautan Kedua)',
+      short: 'Sea 2',
+      textClass: 'text-amber-400',
+    };
+  }
+  return {
+    name: isEn ? 'Sea 3 (Third Sea)' : 'Sea 3 (Lautan Ketiga)',
+    short: 'Sea 3',
+    textClass: 'text-rose-400',
+  };
+}
+
+// Proportional, transparent level price formula matching catalog rates
+function calculateLevelPrice(diff: number, isEn: boolean): { price: number; discountNote: string } {
+  if (diff <= 0) return { price: 0, discountNote: '' };
+
+  let price = 0;
+  let discountNote = '';
+
+  if (diff <= 100) {
+    price = Math.max(2500, Math.round((diff * 50) / 500) * 500);
+    discountNote = isEn
+      ? (diff === 100 ? 'Official 100-Level Package Rate' : `Custom rate: Rp50/Lv (${diff} Levels)`)
+      : (diff === 100 ? 'Tarif Resmi Paket 100 Level' : `Tarif kustom: Rp50/Lv (${diff} Level)`);
+  } else if (diff <= 300) {
+    const base = 5000;
+    const additional = (diff - 100) * 35;
+    price = Math.round((base + additional) / 500) * 500;
+    const normal = diff * 50;
+    const saved = Math.max(0, normal - price);
+    discountNote = isEn
+      ? `Save Rp${saved.toLocaleString('id-ID')} vs retail rate`
+      : `Hemat Rp${saved.toLocaleString('id-ID')} vs tarif eceran normal`;
+  } else if (diff <= 500) {
+    const base = 12000;
+    const additional = (diff - 300) * 15;
+    price = Math.round((base + additional) / 500) * 500;
+    const normal = diff * 50;
+    const saved = Math.max(0, normal - price);
+    discountNote = isEn
+      ? `Best Deal: Save Rp${saved.toLocaleString('id-ID')} (Package Discount)`
+      : `Best Deal: Hemat Rp${saved.toLocaleString('id-ID')} (Diskon Paket)`;
+  } else if (diff <= 700) {
+    const base = 15000;
+    const additional = (diff - 500) * 25;
+    price = Math.round((base + additional) / 500) * 500;
+    const normal = diff * 50;
+    const saved = Math.max(0, normal - price);
+    discountNote = isEn
+      ? `Package Deal: Save Rp${saved.toLocaleString('id-ID')}`
+      : `Paket Hemat: Hemat Rp${saved.toLocaleString('id-ID')}`;
+  } else if (diff <= 1000) {
+    const base = 20000;
+    const additional = (diff - 700) * 33.33;
+    price = Math.round((base + additional) / 500) * 500;
+    const normal = diff * 50;
+    const saved = Math.max(0, normal - price);
+    discountNote = isEn
+      ? `Bulk Deal: Save Rp${saved.toLocaleString('id-ID')}`
+      : `Paket Borongan: Hemat Rp${saved.toLocaleString('id-ID')}`;
+  } else {
+    const base = 30000;
+    const additional = (diff - 1000) * 25;
+    price = Math.round((base + additional) / 500) * 500;
+    const normal = diff * 50;
+    const saved = Math.max(0, normal - price);
+    discountNote = isEn
+      ? `Sultan Wholesale Rate: Save Rp${saved.toLocaleString('id-ID')}`
+      : `Tarif Grosir Sultan: Hemat Rp${saved.toLocaleString('id-ID')}`;
+  }
+
+  return { price, discountNote };
+}
+
 export const PriceCalculator: React.FC = () => {
+  const { language, t } = useLanguage();
   const [activeTab, setActiveTab] = useState<TabType>('level');
 
-  // Level Calculator States
-  const [currentLevel, setCurrentLevel] = useState<number>(1);
-  const [targetLevel, setTargetLevel] = useState<number>(500);
+  // Level Calculator States (Strings permit unrestricted free editing without premature clamp resets)
+  const [currentLevelInput, setCurrentLevelInput] = useState<string>('1');
+  const [targetLevelInput, setTargetLevelInput] = useState<string>('1000');
+
+  // Derived Parsed Integers for Level
+  const parsedCurrentLevel = parseInt(currentLevelInput, 10);
+  const parsedTargetLevel = parseInt(targetLevelInput, 10);
+  const currentLevel = isNaN(parsedCurrentLevel) ? 1 : Math.max(1, Math.min(2600, parsedCurrentLevel));
+  const targetLevel = isNaN(parsedTargetLevel) ? 1 : Math.max(1, Math.min(2600, parsedTargetLevel));
+
+  // Stepper handlers for level
+  const stepCurrentLevel = (delta: number) => {
+    const cur = isNaN(parsedCurrentLevel) ? 1 : parsedCurrentLevel;
+    const next = Math.max(1, Math.min(2600, cur + delta));
+    setCurrentLevelInput(next.toString());
+  };
+
+  const stepTargetLevel = (delta: number) => {
+    const cur = isNaN(parsedTargetLevel) ? (currentLevel + 100) : parsedTargetLevel;
+    const next = Math.max(1, Math.min(2600, cur + delta));
+    setTargetLevelInput(next.toString());
+  };
 
   // Mastery States
-  const [masteryType, setMasteryType] = useState<string>('Fruit (Kitsune / Dough / etc)');
+  const [masteryType, setMasteryType] = useState<string>('Devil Fruit (Kitsune / Dough / etc)');
   const [currentMastery, setCurrentMastery] = useState<number>(1);
   const [targetMastery, setTargetMastery] = useState<number>(300);
 
@@ -30,51 +136,35 @@ export const PriceCalculator: React.FC = () => {
 
   // Price Calculation Logic
   const calculationResult = useMemo(() => {
+    const isEn = language === 'en';
     let price = 0;
     let details = '';
     let discountNote = '';
     let bonusNote = '';
 
     if (activeTab === 'level') {
-      const diff = Math.max(0, targetLevel - currentLevel);
-      if (diff === 0) {
+      const diff = targetLevel - currentLevel;
+      if (diff <= 0) {
         price = 0;
-        details = 'Level awal dan target sama';
-      } else if (diff <= 100) {
-        price = 5000;
-        details = `${diff} Level (Paket 100 Level)`;
-      } else if (diff <= 300) {
-        price = 12000;
-        details = `${diff} Level (Paket 300 Level)`;
-        discountNote = 'Hemat Rp3.000 vs tarif normal';
-      } else if (diff <= 500) {
-        price = 15000;
-        details = `${diff} Level (Paket 500 Level - Best Deal)`;
-        discountNote = 'Hemat Rp10.000 vs tarif normal';
-      } else if (diff <= 700) {
-        price = 20000;
-        details = `${diff} Level (Paket 700 Level)`;
-        discountNote = 'Hemat Rp15.000 vs tarif normal';
-      } else if (diff <= 1000) {
-        price = 30000;
-        details = `${diff} Level (Paket 1000 Level Sultan)`;
-        discountNote = 'Hemat Rp20.000 vs tarif normal';
+        details = isEn
+          ? `Starting level (${currentLevel}) >= Target level (${targetLevel}). Please enter a higher target level.`
+          : `Level awal (${currentLevel}) >= Target level (${targetLevel}). Silakan masukkan target level yang lebih tinggi.`;
+        bonusNote = isEn
+          ? 'Tip: Use the quick presets below (+100 Lv, +500 Lv, or Max 2600).'
+          : 'Tips: Gunakan tombol pilihan cepat di bawah (+100 Lv, +500 Lv, atau Max 2600).';
       } else {
-        // Multiplier for > 1000
-        const thousandBlocks = Math.floor(diff / 1000);
-        const remainder = diff % 1000;
-        let remPrice = 0;
-        if (remainder > 0 && remainder <= 100) remPrice = 5000;
-        else if (remainder > 100 && remainder <= 300) remPrice = 12000;
-        else if (remainder > 300 && remainder <= 500) remPrice = 15000;
-        else if (remainder > 500 && remainder <= 700) remPrice = 20000;
-        else if (remainder > 700) remPrice = 30000;
-
-        price = thousandBlocks * 30000 + remPrice;
-        details = `${diff} Level (${thousandBlocks * 1000} + ${remainder} Level)`;
-        discountNote = 'Paket Combo Jumbo Hemat Maksimal';
+        const result = calculateLevelPrice(diff, isEn);
+        price = result.price;
+        discountNote = result.discountNote;
+        const startSea = getSeaInfo(currentLevel, isEn);
+        const targetSea = getSeaInfo(targetLevel, isEn);
+        details = isEn
+          ? `${diff} Levels (Lv ${currentLevel} [${startSea.short}] → Lv ${targetLevel} [${targetSea.short}])`
+          : `${diff} Level (Lv ${currentLevel} [${startSea.short}] → Lv ${targetLevel} [${targetSea.short}])`;
+        bonusNote = isEn
+          ? 'Free bonus: 100% of Belly, Fruit spawns & Item drops collected during boosting remain on your account'
+          : 'Bonus gratis: 100% Belly, Buah & Item drop selama proses joki tetap utuh di akun Anda';
       }
-      bonusNote = 'Bonus 100% Belly & Item Drop selama leveling gratis';
     } else if (activeTab === 'mastery') {
       const diff = Math.max(0, targetMastery - currentMastery);
       if (diff <= 100) {
@@ -147,7 +237,15 @@ export const PriceCalculator: React.FC = () => {
     }
 
     // Generate formatted WhatsApp message text
-    const waMessage = `Halo Admin Kepinn Joki, saya mau pesan joki Blox Fruits:
+    const waMessage = isEn
+      ? `Hello Admin Kepinn Joki, I would like to order Blox Fruits boosting:
+- Service: ${activeTab.toUpperCase()}
+- Details: ${details}
+- Estimated Price: Rp${price.toLocaleString('id-ID')}
+- Note: ${discountNote || 'Order via website'}
+
+Is there a slot available today? Thank you!`
+      : `Halo Admin Kepinn Joki, saya mau pesan joki Blox Fruits:
 - Layanan: ${activeTab.toUpperCase()}
 - Rincian: ${details}
 - Estimasi Biaya: Rp${price.toLocaleString('id-ID')}
@@ -163,7 +261,7 @@ Apakah slot masih tersedia untuk hari ini? Terima kasih!`;
       waMessage,
       waUrl: `https://wa.me/${ADMIN_PHONE}?text=${encodeURIComponent(waMessage)}`,
     };
-  }, [activeTab, currentLevel, targetLevel, masteryType, currentMastery, targetMastery, bellyAmount, fragmentAmount, specialItem]);
+  }, [activeTab, currentLevel, targetLevel, masteryType, currentMastery, targetMastery, bellyAmount, fragmentAmount, specialItem, language]);
 
   const handleCopyMessage = () => {
     navigator.clipboard.writeText(calculationResult.waMessage);
@@ -176,15 +274,14 @@ Apakah slot masih tersedia untuk hari ini? Terima kasih!`;
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Section Header */}
         <div className="text-center max-w-3xl mx-auto mb-12 space-y-3">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-red-950/60 border border-red-800/50 text-red-400 text-xs font-bold uppercase tracking-wider">
-            <Calculator className="w-3.5 h-3.5" />
-            <span>Kalkulator Estimasi Biaya</span>
-          </div>
+          <p className="text-xs font-bold text-red-400 uppercase tracking-wider">
+            {t.calculator.eyebrow}
+          </p>
           <h2 className="text-3xl sm:text-4xl font-extrabold text-white tracking-tight">
-            Hitung Biaya Joki Secara Transparan
+            {t.calculator.heading}
           </h2>
           <p className="text-zinc-400 text-sm sm:text-base">
-            Sesuaikan kebutuhan akun kamu. Sistem akan menghitung estimasi biaya resmi secara otomatis tanpa biaya tersembunyi.
+            {t.calculator.subheading}
           </p>
         </div>
 
@@ -202,7 +299,7 @@ Apakah slot masih tersedia untuk hari ini? Terima kasih!`;
                     : 'text-zinc-400 hover:text-white hover:bg-zinc-800/60'
                 }`}
               >
-                Joki Level
+                {t.calculator.tabs.level}
               </button>
               <button
                 type="button"
@@ -213,7 +310,7 @@ Apakah slot masih tersedia untuk hari ini? Terima kasih!`;
                     : 'text-zinc-400 hover:text-white hover:bg-zinc-800/60'
                 }`}
               >
-                Joki Mastery
+                {t.calculator.tabs.mastery}
               </button>
               <button
                 type="button"
@@ -224,7 +321,7 @@ Apakah slot masih tersedia untuk hari ini? Terima kasih!`;
                     : 'text-zinc-400 hover:text-white hover:bg-zinc-800/60'
                 }`}
               >
-                Joki Belly
+                {t.calculator.tabs.belly}
               </button>
               <button
                 type="button"
@@ -235,7 +332,7 @@ Apakah slot masih tersedia untuk hari ini? Terima kasih!`;
                     : 'text-zinc-400 hover:text-white hover:bg-zinc-800/60'
                 }`}
               >
-                Fragment (-50%)
+                {t.calculator.tabs.fragment}
               </button>
               <button
                 type="button"
@@ -246,76 +343,249 @@ Apakah slot masih tersedia untuk hari ini? Terima kasih!`;
                     : 'text-zinc-400 hover:text-white hover:bg-zinc-800/60'
                 }`}
               >
-                Raid / Quest
+                {t.calculator.tabs.special}
               </button>
             </div>
 
-            {/* Tab 1: Joki Level Controls */}
+            {/* Tab 1: Joki Level Controls (Flexible free editing for start & target level) */}
             {activeTab === 'level' && (
               <div className="space-y-6 pt-2">
-                <div className="grid sm:grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <label className="text-xs font-semibold text-zinc-400">Level Saat Ini</label>
-                    <input
-                      type="number"
-                      min={1}
-                      max={2549}
-                      value={currentLevel}
-                      onChange={(e) => {
-                        const val = Math.max(1, Math.min(2549, Number(e.target.value) || 1));
-                        setCurrentLevel(val);
-                        if (val >= targetLevel) setTargetLevel(Math.min(2600, val + 100));
-                      }}
-                      className="w-full bg-zinc-900 border border-zinc-700 rounded-xl px-4 py-3 text-white font-bold text-base focus:border-red-500 focus:outline-none focus:ring-1 focus:ring-red-500"
-                    />
-                    <span className="text-[11px] text-zinc-500">Mulai dari Sea 1 / 2 / 3</span>
-                  </div>
+                <p className="text-xs text-zinc-400 flex items-center gap-1.5">
+                  <Compass className="w-3.5 h-3.5 text-red-400 shrink-0" />
+                  <span>{t.calculator.levelTab.customFreeEditTip}</span>
+                </p>
 
-                  <div className="space-y-2">
-                    <label className="text-xs font-semibold text-zinc-400">Target Level</label>
-                    <input
-                      type="number"
-                      min={currentLevel + 1}
-                      max={2600}
-                      value={targetLevel}
-                      onChange={(e) => {
-                        const val = Math.max(currentLevel + 1, Math.min(2600, Number(e.target.value) || currentLevel + 50));
-                        setTargetLevel(val);
-                      }}
-                      className="w-full bg-zinc-900 border border-zinc-700 rounded-xl px-4 py-3 text-white font-bold text-base focus:border-red-500 focus:outline-none focus:ring-1 focus:ring-red-500"
-                    />
-                    <span className="text-[11px] text-zinc-500">Maksimal Level: 2600 (Max Level Saat Ini)</span>
-                  </div>
-                </div>
+                <div className="grid sm:grid-cols-2 gap-6">
+                  {/* Start Level Column */}
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between">
+                      <label htmlFor="input-current-level" className="text-xs font-bold text-zinc-200">
+                        {t.calculator.levelTab.startLevel}
+                      </label>
+                      <span className={`text-xs font-semibold ${getSeaInfo(currentLevel, language === 'en').textClass}`}>
+                        {getSeaInfo(currentLevel, language === 'en').name}
+                      </span>
+                    </div>
 
-                {/* Quick Presets */}
-                <div className="space-y-2">
-                  <span className="text-xs font-semibold text-zinc-400">Pilihan Cepat Target Level:</span>
-                  <div className="flex flex-wrap gap-2">
-                    {[
-                      { label: '+100 Level', add: 100 },
-                      { label: '+300 Level', add: 300 },
-                      { label: '+500 Level (Populer)', add: 500 },
-                      { label: '+1000 Level (Sultan)', add: 1000 },
-                      { label: 'Langsung Max (2600)', setMax: true },
-                    ].map((preset, idx) => (
-                      <button
-                        key={idx}
-                        type="button"
-                        onClick={() => {
-                          if (preset.setMax) {
-                            setTargetLevel(2600);
-                          } else if (preset.add) {
-                            setTargetLevel(Math.min(2600, currentLevel + preset.add));
+                    <div className="relative">
+                      <input
+                        id="input-current-level"
+                        type="number"
+                        min={1}
+                        max={2600}
+                        value={currentLevelInput}
+                        placeholder="1 - 2600"
+                        onChange={(e) => setCurrentLevelInput(e.target.value)}
+                        onBlur={() => {
+                          const val = parseInt(currentLevelInput, 10);
+                          if (isNaN(val) || val < 1) {
+                            setCurrentLevelInput('1');
+                          } else if (val > 2600) {
+                            setCurrentLevelInput('2600');
                           }
                         }}
-                        className="px-3 py-1.5 rounded-lg text-xs font-medium bg-zinc-900 hover:bg-zinc-800 text-zinc-300 border border-zinc-800 hover:border-zinc-700 transition-colors"
-                      >
-                        {preset.label}
-                      </button>
-                    ))}
+                        className="w-full bg-zinc-900 border border-zinc-700 hover:border-zinc-500 rounded-xl px-4 py-3 text-white font-extrabold text-xl focus:border-red-500 focus:outline-none focus:ring-2 focus:ring-red-500/20 transition-all"
+                      />
+                      <span className="absolute right-3.5 top-1/2 -translate-y-1/2 text-xs font-semibold text-zinc-500 pointer-events-none">
+                        Lv
+                      </span>
+                    </div>
+
+                    {/* Steppers for Start Level */}
+                    <div className="space-y-1.5">
+                      <span className="text-[11px] text-zinc-400 font-medium">
+                        {t.calculator.levelTab.stepperLabel}
+                      </span>
+                      <div className="grid grid-cols-4 gap-1.5">
+                        {[-100, -10, 10, 100].map((step) => (
+                          <button
+                            key={step}
+                            type="button"
+                            onClick={() => stepCurrentLevel(step)}
+                            className="py-1.5 px-2 rounded-lg text-xs font-bold bg-zinc-900 hover:bg-zinc-800 text-zinc-300 border border-zinc-800 hover:border-zinc-700 transition-colors flex items-center justify-center gap-0.5 active:scale-95"
+                          >
+                            {step > 0 ? `+${step}` : step}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Starting Sea Shortcuts */}
+                    <div className="space-y-1.5 pt-1">
+                      <span className="text-[11px] text-zinc-400 font-medium">
+                        {t.calculator.levelTab.quickJumpSea}
+                      </span>
+                      <div className="flex flex-wrap gap-1.5">
+                        {[
+                          { label: 'Sea 1 (Lv 1)', level: 1 },
+                          { label: 'Sea 2 (Lv 700)', level: 700 },
+                          { label: 'Sea 3 (Lv 1500)', level: 1500 },
+                        ].map((sea) => (
+                          <button
+                            key={sea.level}
+                            type="button"
+                            onClick={() => setCurrentLevelInput(sea.level.toString())}
+                            className={`px-2.5 py-1 rounded-lg text-[11px] font-semibold border transition-all ${
+                              currentLevel === sea.level
+                                ? 'bg-red-600/30 border-red-500 text-white font-bold'
+                                : 'bg-zinc-900/80 border-zinc-800 text-zinc-400 hover:text-white hover:bg-zinc-800'
+                            }`}
+                          >
+                            {sea.label}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Target Level Column */}
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between">
+                      <label htmlFor="input-target-level" className="text-xs font-bold text-zinc-200">
+                        {t.calculator.levelTab.targetLevel}
+                      </label>
+                      <span className={`text-xs font-semibold ${getSeaInfo(targetLevel, language === 'en').textClass}`}>
+                        {getSeaInfo(targetLevel, language === 'en').name}
+                      </span>
+                    </div>
+
+                    <div className="relative">
+                      <input
+                        id="input-target-level"
+                        type="number"
+                        min={1}
+                        max={2600}
+                        value={targetLevelInput}
+                        placeholder="1 - 2600"
+                        onChange={(e) => setTargetLevelInput(e.target.value)}
+                        onBlur={() => {
+                          const val = parseInt(targetLevelInput, 10);
+                          if (isNaN(val) || val < 1) {
+                            setTargetLevelInput(Math.min(2600, currentLevel + 100).toString());
+                          } else if (val > 2600) {
+                            setTargetLevelInput('2600');
+                          }
+                        }}
+                        className="w-full bg-zinc-900 border border-zinc-700 hover:border-zinc-500 rounded-xl px-4 py-3 text-white font-extrabold text-xl focus:border-red-500 focus:outline-none focus:ring-2 focus:ring-red-500/20 transition-all"
+                      />
+                      <span className="absolute right-3.5 top-1/2 -translate-y-1/2 text-xs font-semibold text-zinc-500 pointer-events-none">
+                        Lv
+                      </span>
+                    </div>
+
+                    {/* Steppers for Target Level */}
+                    <div className="space-y-1.5">
+                      <span className="text-[11px] text-zinc-400 font-medium">
+                        {t.calculator.levelTab.stepperLabel}
+                      </span>
+                      <div className="grid grid-cols-4 gap-1.5">
+                        {[-100, -10, 10, 100].map((step) => (
+                          <button
+                            key={step}
+                            type="button"
+                            onClick={() => stepTargetLevel(step)}
+                            className="py-1.5 px-2 rounded-lg text-xs font-bold bg-zinc-900 hover:bg-zinc-800 text-zinc-300 border border-zinc-800 hover:border-zinc-700 transition-colors flex items-center justify-center gap-0.5 active:scale-95"
+                          >
+                            {step > 0 ? `+${step}` : step}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Quick Presets for Target Level */}
+                    <div className="space-y-1.5 pt-1">
+                      <span className="text-[11px] text-zinc-400 font-medium">
+                        {t.calculator.levelTab.quickAddTarget}
+                      </span>
+                      <div className="flex flex-wrap gap-1.5">
+                        {[
+                          { label: '+50', add: 50 },
+                          { label: '+100', add: 100 },
+                          { label: '+300', add: 300 },
+                          { label: '+500 (Best)', add: 500 },
+                          { label: '+1000', add: 1000 },
+                          { label: 'Sea 2 (700)', setExact: 700 },
+                          { label: 'Sea 3 (1500)', setExact: 1500 },
+                          { label: 'Max (2600)', setExact: 2600 },
+                        ].map((preset, idx) => (
+                          <button
+                            key={idx}
+                            type="button"
+                            onClick={() => {
+                              if (preset.setExact !== undefined) {
+                                setTargetLevelInput(preset.setExact.toString());
+                              } else if (preset.add !== undefined) {
+                                const base = isNaN(parsedCurrentLevel) ? 1 : parsedCurrentLevel;
+                                setTargetLevelInput(Math.min(2600, base + preset.add).toString());
+                              }
+                            }}
+                            className={`px-2.5 py-1 rounded-lg text-[11px] font-semibold border transition-all ${
+                              preset.setExact === 2600 && targetLevel === 2600
+                                ? 'bg-red-600 text-white border-red-500 font-bold shadow-md shadow-red-950/40'
+                                : 'bg-zinc-900/80 border-zinc-800 text-zinc-300 hover:text-white hover:bg-zinc-800'
+                            }`}
+                          >
+                            {preset.label}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
                   </div>
                 </div>
+
+                {/* Level Journey Visualizer or Alert Banner */}
+                {targetLevel <= currentLevel ? (
+                  <div className="p-4 rounded-xl bg-amber-950/30 border border-amber-800/60 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs text-amber-300">
+                    <div className="flex items-center gap-2">
+                      <AlertCircle className="w-4 h-4 text-amber-400 shrink-0" />
+                      <span>{t.calculator.levelTab.invalidRange}</span>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setTargetLevelInput(Math.min(2600, currentLevel + 100).toString())}
+                      className="inline-flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-lg bg-amber-500/20 hover:bg-amber-500/30 text-amber-200 font-bold border border-amber-500/40 transition-colors shrink-0"
+                    >
+                      <Plus className="w-3.5 h-3.5" />
+                      <span>{t.calculator.levelTab.autoFixBtn}</span>
+                    </button>
+                  </div>
+                ) : (
+                  <div className="pt-2 space-y-2.5">
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs">
+                      <div className="flex items-center gap-2">
+                        <span className="font-semibold text-zinc-400">{t.calculator.levelTab.levelGap}:</span>
+                        <span className="font-extrabold text-red-400 text-sm">
+                          +{targetLevel - currentLevel} Level
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-1.5 text-zinc-400">
+                        <span>{getSeaInfo(currentLevel, language === 'en').name}</span>
+                        <ArrowRight className="w-3.5 h-3.5 text-zinc-500" />
+                        <span className="text-white font-semibold">{getSeaInfo(targetLevel, language === 'en').name}</span>
+                      </div>
+                    </div>
+
+                    {/* Progress track towards Max Level 2600 */}
+                    <div className="space-y-1">
+                      <div className="w-full bg-zinc-800 h-2 rounded-full overflow-hidden flex">
+                        <div
+                          className="bg-zinc-600 h-full transition-all duration-300"
+                          style={{ width: `${(currentLevel / 2600) * 100}%` }}
+                        ></div>
+                        <div
+                          className="bg-gradient-to-r from-red-500 to-amber-400 h-full transition-all duration-300"
+                          style={{ width: `${Math.min(100 - (currentLevel / 2600) * 100, ((targetLevel - currentLevel) / 2600) * 100)}%` }}
+                        ></div>
+                      </div>
+                      <div className="flex justify-between text-[10px] text-zinc-500">
+                        <span>Lv 1 (Sea 1)</span>
+                        <span>Lv 700 (Sea 2)</span>
+                        <span>Lv 1500 (Sea 3)</span>
+                        <span>Lv 2600 (Max Cap)</span>
+                      </div>
+                    </div>
+                  </div>
+                )}
               </div>
             )}
 
@@ -473,46 +743,48 @@ Apakah slot masih tersedia untuk hari ini? Terima kasih!`;
           <div className="lg:col-span-5 bg-gradient-to-b from-zinc-950 via-zinc-900 to-zinc-950 p-6 sm:p-8 rounded-2xl border border-red-900/40 shadow-2xl space-y-6">
             <div className="flex items-center justify-between pb-4 border-b border-zinc-800">
               <span className="text-xs font-bold text-zinc-400 uppercase tracking-wider">
-                Ringkasan Order
+                {t.calculator.summary.title}
               </span>
-              <span className="inline-flex items-center gap-1 text-xs text-emerald-400 bg-emerald-950/60 px-2.5 py-1 rounded-full border border-emerald-800/40">
+              <span className="inline-flex items-center gap-1 text-xs text-emerald-400 font-medium">
                 <ShieldCheck className="w-3.5 h-3.5" />
-                Tarif Resmi
+                {t.calculator.summary.officialRate}
               </span>
             </div>
 
             {/* Big Price Display */}
             <div>
-              <span className="text-xs text-zinc-400">Total Estimasi Biaya</span>
+              <span className="text-xs text-zinc-400">{t.calculator.summary.totalEstimate}</span>
               <div className="text-4xl sm:text-5xl font-extrabold text-white tracking-tight mt-1 flex items-baseline gap-2">
                 <span>Rp{calculationResult.price.toLocaleString('id-ID')}</span>
-                <span className="text-xs text-zinc-500 font-normal">/ pesanan</span>
+                <span className="text-xs text-zinc-500 font-normal">{t.calculator.summary.perOrder}</span>
               </div>
               <p className="text-xs text-red-400 font-semibold mt-1">
                 {calculationResult.details}
               </p>
             </div>
 
-            {/* Highlights & Bonuses */}
-            <div className="space-y-2 py-2">
-              {calculationResult.discountNote && (
-                <div className="flex items-center gap-2 text-xs text-emerald-400 bg-emerald-950/40 p-2.5 rounded-lg border border-emerald-800/30">
-                  <Sparkles className="w-4 h-4 shrink-0" />
-                  <span>{calculationResult.discountNote}</span>
-                </div>
-              )}
-              {calculationResult.bonusNote && (
-                <div className="flex items-center gap-2 text-xs text-zinc-300 bg-zinc-900/90 p-2.5 rounded-lg border border-zinc-800">
-                  <AlertCircle className="w-4 h-4 text-amber-400 shrink-0" />
-                  <span>{calculationResult.bonusNote}</span>
-                </div>
-              )}
-            </div>
+            {/* Highlights & Bonuses (Pure text, no card containers) */}
+            {(calculationResult.discountNote || calculationResult.bonusNote) && (
+              <div className="space-y-1.5 py-1 text-xs">
+                {calculationResult.discountNote && (
+                  <p className="flex items-center gap-1.5 text-emerald-400 font-medium">
+                    <Sparkles className="w-3.5 h-3.5 shrink-0" />
+                    <span>{calculationResult.discountNote}</span>
+                  </p>
+                )}
+                {calculationResult.bonusNote && (
+                  <p className="flex items-center gap-1.5 text-zinc-400">
+                    <AlertCircle className="w-3.5 h-3.5 text-amber-400 shrink-0" />
+                    <span>{calculationResult.bonusNote}</span>
+                  </p>
+                )}
+              </div>
+            )}
 
             {/* Generated WhatsApp Message Box */}
             <div className="space-y-2">
               <div className="flex items-center justify-between">
-                <span className="text-xs text-zinc-400 font-semibold">Format Pesan WhatsApp:</span>
+                <span className="text-xs text-zinc-400 font-semibold">{t.calculator.summary.waMsgLabel}</span>
                 <button
                   type="button"
                   onClick={handleCopyMessage}
@@ -521,12 +793,12 @@ Apakah slot masih tersedia untuk hari ini? Terima kasih!`;
                   {copied ? (
                     <>
                       <Check className="w-3.5 h-3.5 text-emerald-400" />
-                      <span className="text-emerald-400 font-medium">Tersalin!</span>
+                      <span className="text-emerald-400 font-medium">{t.calculator.summary.copied}</span>
                     </>
                   ) : (
                     <>
                       <Copy className="w-3.5 h-3.5" />
-                      <span>Salin Teks</span>
+                      <span>{t.calculator.summary.copyTemplate}</span>
                     </>
                   )}
                 </button>
@@ -545,12 +817,12 @@ Apakah slot masih tersedia untuk hari ini? Terima kasih!`;
               className="w-full inline-flex items-center justify-center gap-2.5 bg-gradient-to-r from-red-600 to-red-700 hover:from-red-500 hover:to-red-600 text-white font-bold py-4 px-6 rounded-xl shadow-xl shadow-red-950/60 transition-all hover:scale-[1.01] focus:outline-none focus-visible:ring-2 focus-visible:ring-white min-h-[48px]"
             >
               <MessageCircle className="w-5 h-5 fill-white" />
-              <span>Pesan via WhatsApp Sekarang</span>
+              <span>{t.calculator.summary.orderWaBtn}</span>
               <ArrowRight className="w-4 h-4" />
             </a>
 
             <p className="text-[11px] text-center text-zinc-500">
-              Admin akan langsung membalas untuk konfirmasi slot pengerjaan dan mengirimkan invoice pembayaran.
+              {t.calculator.summary.securityNote}
             </p>
           </div>
         </div>

@@ -1,8 +1,10 @@
 import React from 'react';
-import { ShieldCheck, Lock, Key, AlertTriangle, Smartphone, LogOut, CheckCircle2, ShieldAlert } from 'lucide-react';
-import { SECURITY_CHECKLIST } from '../data';
+import { LogOut, CheckCircle2, ShieldAlert } from 'lucide-react';
+import { useLanguage } from '../context/LanguageContext';
 
 export const SecurityCenter: React.FC = () => {
+  const { language, t } = useLanguage();
+
   return (
     <section id="keamanan" className="py-24 bg-zinc-950 relative overflow-hidden">
       {/* Decorative Glow */}
@@ -11,21 +13,20 @@ export const SecurityCenter: React.FC = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         {/* Header */}
         <div className="text-center max-w-3xl mx-auto mb-16 space-y-3">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-950/70 border border-emerald-800/50 text-emerald-400 text-xs font-bold uppercase tracking-wider">
-            <ShieldCheck className="w-4 h-4" />
-            <span>Cybersecurity & SOP Perlindungan Akun</span>
-          </div>
+          <p className="text-xs font-bold text-emerald-400 uppercase tracking-wider">
+            {t.security.eyebrow}
+          </p>
           <h2 className="text-3xl sm:text-4xl font-extrabold text-white tracking-tight">
-            Akun Roblox Anda 100% Terlindungi
+            {t.security.heading}
           </h2>
           <p className="text-zinc-400 text-sm sm:text-base leading-relaxed">
-            Kami mengutamakan keamanan siber dan perlindungan data pelanggan. Ikuti 4 langkah SOP di bawah ini sebelum menyerahkan akun agar terhindar dari risiko pembajakan atau kehilangan item.
+            {t.security.subheading}
           </p>
         </div>
 
         {/* 4-Step SOP Cards Grid */}
         <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 mb-16">
-          {SECURITY_CHECKLIST.map((step) => {
+          {t.security.checklist.map((step) => {
             return (
               <div
                 key={step.step}
@@ -37,7 +38,7 @@ export const SecurityCenter: React.FC = () => {
                       0{step.step}
                     </span>
                     <span className="text-xs font-semibold text-zinc-500 uppercase tracking-wider">
-                      Langkah {step.step}
+                      {language === 'en' ? `Step ${step.step}` : `Langkah ${step.step}`}
                     </span>
                   </div>
 
@@ -68,29 +69,19 @@ export const SecurityCenter: React.FC = () => {
               <div className="flex items-center gap-2.5 text-amber-400">
                 <ShieldAlert className="w-5 h-5 shrink-0" />
                 <h4 className="text-lg font-bold text-white">
-                  Peringatan Bahaya Cookie Hijacking (.ROBLOSECURITY)
+                  {t.security.cookieWarning.title}
                 </h4>
               </div>
               <p className="text-xs sm:text-sm text-zinc-300 leading-relaxed">
-                Hati-hati terhadap oknum joki palsu yang meminta token session cookie browser atau link verifikasi berbahaya. <strong className="text-white">Kepinn Joki tidak pernah meminta cookie ataupun akses email pemulihan Anda.</strong> Kami hanya login langsung ke game client Roblox resmi secara manual.
+                {t.security.cookieWarning.desc}
               </p>
               <div className="grid sm:grid-cols-2 gap-3 pt-2 text-xs text-zinc-400">
-                <div className="flex items-center gap-2">
-                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
-                  <span>Semua progress dilaporkan via screenshot WhatsApp</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
-                  <span>Data chat otomatis dibersihkan setelah selesai</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
-                  <span>Pengerjaan di Private Server tanpa campur tangan bot</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
-                  <span>Garansi refund jika ada kendala teknis dari pihak kami</span>
-                </div>
+                {t.security.cookieWarning.bullets.map((bullet, idx) => (
+                  <div key={idx} className="flex items-center gap-2">
+                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
+                    <span>{bullet}</span>
+                  </div>
+                ))}
               </div>
             </div>
 
@@ -100,12 +91,12 @@ export const SecurityCenter: React.FC = () => {
                   <LogOut className="w-5 h-5" />
                 </div>
                 <div>
-                  <p className="text-xs text-zinc-400">Fitur Keamanan Roblox</p>
-                  <p className="text-sm font-bold text-white">Sign Out All Sessions</p>
+                  <p className="text-xs text-zinc-400">{t.security.cookieWarning.cardBadge}</p>
+                  <p className="text-sm font-bold text-white">{t.security.cookieWarning.cardTitle}</p>
                 </div>
               </div>
               <p className="text-[11px] text-zinc-400">
-                Fitur di Roblox Settings ini dapat memutuskan semua perangkat lain seketika, memberi Anda kendali 100% penuh atas akun Anda setiap saat.
+                {t.security.cookieWarning.cardDesc}
               </p>
             </div>
           </div>

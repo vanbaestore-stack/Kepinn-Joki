@@ -1,52 +1,30 @@
 import React from 'react';
 import { Calculator, MessageSquare, ShieldCheck, CheckCircle2 } from 'lucide-react';
+import { useLanguage } from '../context/LanguageContext';
 
 export const OrderWorkflow: React.FC = () => {
-  const steps = [
-    {
-      num: '01',
-      icon: Calculator,
-      title: 'Hitung & Tentukan Paket',
-      desc: 'Pilih layanan yang kamu perlukan di Kalkulator Harga (Level, Mastery, Belly, atau Fragment) untuk melihat total biaya dan estimasi waktu.',
-    },
-    {
-      num: '02',
-      icon: MessageSquare,
-      title: 'Konfirmasi Slot via WhatsApp',
-      desc: 'Klik tombol order untuk mengirim pesan otomatis ke admin. Admin akan mengecek ketersediaan slot pengerjaan dan mengirimkan QRIS/rekening resmi.',
-    },
-    {
-      num: '03',
-      icon: ShieldCheck,
-      title: 'Terapkan SOP Keamanan Akun',
-      desc: 'Kunci email akun dengan 4-digit Account PIN Roblox, gunakan password sementara, dan berikan kode 2FA sekali pakai saat login pertama.',
-    },
-    {
-      num: '04',
-      icon: CheckCircle2,
-      title: 'Pengerjaan & Verifikasi Hasil',
-      desc: 'Tim kami farming di Private Server hingga target selesai. Begitu selesai, Anda wajib klik "Log Out Other Sessions" dan ganti password kembali.',
-    },
-  ];
+  const { t } = useLanguage();
+
+  const icons = [Calculator, MessageSquare, ShieldCheck, CheckCircle2];
 
   return (
     <section id="alur" className="py-24 bg-zinc-900/40 border-t border-zinc-800">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center max-w-3xl mx-auto mb-16 space-y-3">
-          <span className="text-xs font-bold text-red-400 uppercase tracking-wider">
-            Alur Pemesanan Transparan
-          </span>
+          <p className="text-xs font-bold text-red-400 uppercase tracking-wider">
+            {t.workflow.eyebrow}
+          </p>
           <h2 className="text-3xl sm:text-4xl font-extrabold text-white tracking-tight">
-            Cara Order yang Aman & Mudah
+            {t.workflow.heading}
           </h2>
           <p className="text-zinc-400 text-sm sm:text-base">
-            Proses pemesanan dirancang dengan perlindungan keamanan akun berlapis dari awal hingga akhir.
+            {t.workflow.subheading}
           </p>
         </div>
 
         <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
-          {steps.map((s, idx) => {
-            const IconComp = s.icon;
+          {t.workflow.steps.map((s, idx) => {
+            const IconComp = icons[idx % icons.length];
             return (
               <div
                 key={idx}
